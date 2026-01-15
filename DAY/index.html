@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ski School Product Day Builder</title>
+
+  <style>
+    :root {
+      --bg:#0b0d10;
+      --card:#11151b;
+      --ink:#e9eef5;
+      --muted:#aab6c6;
+      --line:#2a3442;
+      --accent:#7dd3fc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin:0;
+      font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:var(--bg);
+      color:var(--ink);
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin: 6px 0 14px;
+    }
+
+    .card {
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding: 14px;
+    }
+
+    label {
+      display:block;
+      color:var(--muted);
+      font-size: 13px;
+      margin: 10px 0 6px;
+    }
+
+    select {
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#0e131a;
+      color:var(--ink);
+    }
+
+    .row {
+      display:grid;
+      gap: 10px;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 640px) {
+      .row { grid-template-columns: 1fr 1fr; }
+    }
+
+    .checks {
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chk {
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+      padding:10px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#0e131a;
+    }
+
+    .chk small {
+      color: var(--muted);
+      display:block;
+      margin-top:2px;
+      font-size: 12px;
+    }
+
+    button {
+      width:100%;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border:1px solid #1f2a38;
+      background: #0ea5e9;
+      color:#041018;
+      font-weight:700;
+      font-size: 16px;
+    }
+
+    .hint {
+      color:var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+/* Segmented button control (radio-based, no JS) */
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.seg {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #0e131a;
+  text-align: center;
+  padding: 12px 10px;
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--muted);
+  user-select: none;
+}
+
+.seg small {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Hide the actual radio */
+.seg input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Selected state */
+.seg input:checked + span {
+  color: var(--ink);
+}
+
+.seg:has(input:checked) {
+  background: #0b1b24;
+  border-color: #214155;
+  box-shadow: inset 0 0 0 1px rgba(125,211,252,0.35);
+}
+
+/* Hover affordance */
+.seg:hover {
+  border-color: #35506a;
+}
+
+
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Product Day Plan</h1>
+
+    <form class="card" method="get" action="schedule.html">
+      <div class="row">
+        <div>
+          <label for="cat">Category</label>
+          <select id="cat" name="cat">
+            <option value="chickadees">Chickadees (3–4)</option>
+            <option value="hawks">Red-Tailed Hawks (5–6)</option>
+            <option value="eagles">Golden Eagles (7–14)</option>
+            <option value="adult">Adult Groups</option>
+          </select>
+        </div>
+
+        <div>
+        <label>Meeting time</label>
+          <div class="segmented">
+            <label class="seg">
+              <input type="radio" name="meet" value="weekend" checked />
+              <span>Weekend / Holiday (<span style="color:red">Red</span>)<br><small>8:00</small></span>
+            </label>
+            <label class="seg">
+              <input type="radio" name="meet" value="normal" />
+              <span>Normal Weekday<br><small>8:30</small></span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <label>Duties (check what you’re assigned)</label>
+      <div class="checks">
+        <label class="chk">
+          <input type="checkbox" name="duties" value="booting" />
+          <div>Booting<small>Morning assignment</small></div>
+        </label>
+
+        <label class="chk">
+          <input type="checkbox" name="duties" value="room" />
+          <div>Room attendant<small>Chickadees only</small></div>
+        </label>
+
+        <label class="chk">
+          <input type="checkbox" name="duties" value="vesting" />
+          <div>Vesting<small>Morning assignment</small></div>
+        </label>
+
+        <label class="chk">
+          <input type="checkbox" name="duties" value="skirunner" />
+          <div>Ski runner<small>Morning assignment</small></div>
+        </label>
+
+        <label class="chk">
+          <input type="checkbox" name="duties" value="checkin" />
+          <div>Check-in<small>Morning assignment</small></div>
+        </label>
+
+        <label class="chk">
+          <input type="checkbox" name="duties" value="flags" />
+          <div>Flags<small>Hawks / Eagles</small></div>
+        </label>
+
+        <label class="chk">
+          <input type="checkbox" name="duties" value="transport" />
+          <div>Transport<small>Hawks / Eagles</small></div>
+        </label>
+
+        <label class="chk">
+          <input type="checkbox" name="duties" value="leveling" />
+          <div>Leveling<small>Hawks / Eagles</small></div>
+        </label>
+
+        <label class="chk">
+          <input type="checkbox" name="duties" value="vrr" />
+          <div>VRR<small>Adult groups</small></div>
+        </label>
+
+        <label class="chk">
+          <input type="checkbox" name="duties" value="agl" />
+          <div>AGL<small>Adult groups</small></div>
+        </label>
+
+        <label class="chk">
+          <input type="checkbox" name="duties" value="archway" />
+          <div>Archway<small>Adult groups</small></div>
+        </label>
+
+        <label class="chk">
+          <input type="checkbox" name="duties" value="private" />
+          <div>1-hr AM Private<small>Adults only (no assignments)</small></div>
+        </label>
+      </div>
+
+      <button type="submit">Generate day plan</button>
+
+    </form>
+  </div>
+</body>
+</html>
+

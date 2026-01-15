@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Day Plan</title>
+
+  <style>
+    :root {
+      --bg:#0b0d10;
+      --card:#11151b;
+      --ink:#e9eef5;
+      --muted:#aab6c6;
+      --line:#2a3442;
+      --accent:#7dd3fc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin:0;
+      font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:var(--bg);
+      color:var(--ink);
+    }
+
+    .wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin:0;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    button {
+      appearance:none;
+      border:1px solid var(--line);
+      background:#0e131a;
+      color:var(--ink);
+      padding:10px 12px;
+      border-radius: 14px;
+      font-weight: 650;
+      cursor:pointer;
+    }
+
+    .timeline {
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Block base */
+    .block {
+      border:1px solid var(--line);
+      border-radius: 18px;
+      background: var(--card);
+      padding: 12px 12px;
+      position: relative;
+      overflow:hidden;
+    }
+
+    .block::before {
+      content:"";
+      position:absolute;
+      left:0; top:0; bottom:0;
+      width:4px;
+      background: var(--accent);
+      opacity: .9;
+    }
+
+    .warn {
+      border-left: 4px solid #fb7185;
+    }
+
+    .warn::before {
+      background:#fb7185;
+    }
+
+    /* Summary row (used both for div blocks and <summary>) */
+    .top {
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      align-items: baseline;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .time {
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .sub {
+      color: var(--muted);
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .tags {
+      margin-top: 10px;
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 12px;
+      color: #cfe9f6;
+      border:1px solid #214155;
+      background:#0b1b24;
+      padding:6px 8px;
+      border-radius: 999px;
+    }
+
+    /* <details> treatment */
+    details.block {
+      padding: 0; /* we'll pad the summary + content instead */
+    }
+
+    details.block > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 12px 12px;
+      outline: none;
+    }
+
+    details.block > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.block[open] > summary {
+      border-bottom: 1px solid var(--line);
+    }
+
+    details.block .content {
+      padding: 12px 12px;
+    }
+
+    @media print {
+      button { display:none !important; }
+      body { background:white; color:black; }
+      .block { border:1px solid #bbb; background:white; }
+      .sub, .meta, .time { color:#333; }
+      .tag {
+        border:1px solid #bbb;
+        background: #f6f6f6;
+        color:#111;
+      }
+    }
+
+
+/* Current time indicator: red needle anchored inside the current block */
+#nowNeedle{
+  position: absolute;
+  right: -10px;            /* negative to overlap the time column slightly */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20%;            /* how far it reaches into the time area */
+  height: 2px;
+  background: #ef4444;
+  border-radius: 2px;
+  z-index: 5;
+  pointer-events: none;
+  display: none;
+  box-shadow: 0 0 0.5px rgba(0,0,0,.6);
+}
+
+/* little “cap” on the right edge */
+#nowNeedle::before{
+  content:"";
+  position: absolute;
+  right: -3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 999px;
+}
+
+/* tiny triangle pointing left */
+#nowNeedle::after{
+  content:"";
+  position:absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 6px solid #ef4444;
+}
+
+  </style>
+</head>
+
+<body>
+
+  <div id="nowNeedle" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 id="heading">Day Plan</h1>
+        <div class="meta" id="meta"></div>
+      </div>
+      <div>
+        <button onclick="window.print()">Print</button>
+      </div>
+    </header>
+
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+<script>
+  const qs = new URLSearchParams(location.search);
+
+  const cat    = qs.get("cat")  || "chickadees";
+  const meet   = qs.get("meet") || "normal";
+  const duties = qs.getAll("duties");
+
+  const CAT_LABEL = {
+    chickadees: "Chickadees (3–4)",
+    hawks:      "Red-Tailed Hawks (5–6)",
+    eagles:     "Golden Eagles (7–14)",
+    adult:      "Adult Groups"
+  };
+
+  const MEET_TIME = (meet === "weekend") ? "08:00" : "08:30";
+
+  /*
+    Edit-friendly templates:
+    - Every object has one field per line.
+    - Use `notes` for expandable details.
+    - `bucket: "assignments"` is how we attach duty tags.
+  */
+  const TEMPLATES = {
+    chickadees: [
+      {
+        start: MEET_TIME,
+        end:   MEET_TIME,
+        title: "Morning meeting",
+        loc:   "The Beach (Village)",
+        notes: "Weekend/red = 8:00. Normal day = 8:30."
+      },
+      {
+        start:  "09:00",
+        end:    "09:45",
+        title:  "Morning assignments",
+        loc:    "Kids area",
+        notes:  "Use this block for whatever duty you’re assigned (booting, vesting, runner, check-in, etc.).",
+        bucket: "assignments"
+      },
+      {
+        start: "10:00",
+        end:   "12:00",
+        title: "Lessons",
+        loc:   "3–4 Room → Mid-mountain",
+        notes: "Turn in class list before leaving. AM-only students bring gear to mid-mountain. (check tag if you are unsure)"
+      },
+      {
+        start: "12:00",
+        end:   "13:00",
+        title: "Lunch / AM return window",
+        loc:   "",
+        notes: "Return AM-only students to parents. See below."
+      },
+      {
+        start: "12:30",
+        end:   "12:30",
+        title: "AM parent pickup",
+        loc:   "Mid-mountain kids lunch room (front office)",
+        notes: "Keep the handoff clean and documented."
+      },
+      {
+        start: "13:00",
+        end:   "14:15",
+        title: "Lessons",
+      },
+      {
+        start: "14:15",
+        end:   "14:15",
+        title: "Cookie break",
+        loc:   "",
+        notes: ""
+      },
+      {
+        start: "14:30",
+        end:   "14:30",
+        title: "Head to parent pickup",
+        loc:   "Boot Rooms / The Overlook",
+        notes: "De-boot in age-appropriate boot room, please return kids in street shoes whenever possible, check their lesson ticket to see if they will return the next day. If they are coming back the next day, label their gear with their name to reduce check-in time.",
+        warn:  true
+      },
+      {
+        start: "15:00",
+        end:   "15:00",
+        title: "Return full-day students / wrap",
+        loc:   "The Overlook",
+        notes: "Collect return slips. If no slip: photo ID (Epic Pass preferred). Parent signature required on class list. Collect all vests, return them to correct bin. Staple class lists and slips, deposit them in mailbox.",
+        warn:  true
+      },
+    ],
+
+    hawks: [
+      {
+        start: MEET_TIME,
+        end:   MEET_TIME,
+        title: "Morning meeting",
+        loc:   "The Beach (Village)",
+        notes: "Weekend/red = 8:00. Normal day = 8:30."
+      },
+      {
+        start:  "09:00",
+        end:    "09:45",
+        title:  "Morning assignments",
+        loc:    "Kids area",
+        notes:  "Use this block for whatever duty you’re assigned (booting, flags, transport, leveling, etc.).",
+        bucket: "assignments"
+      },
+      {
+        start: "10:00",
+        end:   "11:00",
+        title: "Lessons",
+        loc:   "Launch from The Beach",
+        notes: "Turn in TOP page of class list before leaving The Beach."
+      },
+      {
+        start: "11:00",
+        end:   "11:00",
+        title: "Level splits",
+        loc:   "Mid-mountain",
+        notes: "Coordinate with supervisor at mid-mountain. Mark class list with arrows."
+      },
+      {
+        start: "11:30",
+        end:   "13:00",
+        title: "Lunch",
+        loc:   "",
+        notes: "30-minute lunch. Confirm timing with Lunch Meister on high-volume days."
+      },
+      {
+        start: "13:00",
+        end:   "14:15",
+        title: "Lessons",
+        loc:   "",
+        notes: "",
+      },
+      {
+        start: "14:15",
+        end:   "14:30",
+        title: "Cookie break",
+        loc:   "",
+        notes: "May shift during holiday/busy days."
+      },
+      {
+        start: "14:50",
+        end:   "14:50",
+        title: "Head to parent pickup",
+        loc:   "Boot Rooms / The Overlook",
+        notes: "De-boot in age-appropriate boot room, please return kids in street shoes whenever possible, check their lesson ticket to see if they will return the next day. If they are coming back the next day, send the gear (boots/helmet/gloves/goggles) with the student to reduce tomorrow check-in time.",
+        warn:  true
+      },
+      {
+        start: "15:20",
+        end:   "15:20",
+        title: "Return students / wrap",
+        loc:   "The Overlook",
+        notes: "Collect return slips. If no slip: photo ID (Epic Pass preferred). Parent signature required on class list. Collect all vests, return them to correct bin. Staple class lists and slips, deposit them in mailbox.",
+        warn:  true
+      },
+    ],
+
+    eagles: [
+      {
+        start: MEET_TIME,
+        end:   MEET_TIME,
+        title: "Morning meeting",
+        loc:   "The Beach (Village)",
+        notes: "Weekend/red = 8:00. Normal day = 8:30."
+      },
+      {
+        start:  "08:40",
+        end:    "09:20",
+        title:  "Morning assignments",
+        loc:    "Kids area",
+        notes:  "Use this block for whatever duty you’re assigned (booting, flags, transport, leveling, etc.).",
+        bucket: "assignments"
+      },
+      {
+        start: "09:30",
+        end:   "10:30",
+        title: "Lessons",
+        loc:   "Launch from The Beach",
+        notes: "Turn in class list before leaving The Beach."
+      },
+      {
+        start: "10:30",
+        end:   "10:30",
+        title: "Level splits",
+        loc:   "Mid-mountain",
+        notes: "Coordinate with supervisor at mid-mountain."
+      },
+      {
+        start: "11:30",
+        end:   "13:00",
+        title: "Lunch window",
+        loc:   "",
+        notes: "30-minute lunch. Confirm timing with Lunch Meister on busy days."
+      },
+      {
+        start: "13:00",
+        end:   "14:15",
+        title: "Lessons",
+        loc:   "",
+        notes: "",
+      },
+      {
+        start: "14:15",
+        end:   "14:30",
+        title: "Cookie break",
+        loc:   "",
+        notes: "May shift on busy days."
+      },
+      {
+        start: "15:15",
+        end:   "15:15",
+        title: "Head to parent pickup",
+        loc:   "Boot Rooms / The Overlook",
+        notes: "De-boot in age-appropriate boot room, please return kids in street shoes whenever possible, check their lesson ticket to see if they will return the next day. If they are coming back the next day, send the gear (boots/helmet/gloves/goggles) with the student to reduce tomorrow check-in time.",
+        warn:  true
+      },
+      {
+        start: "15:40",
+        end:   "15:40",
+        title: "Return students / wrap",
+        loc:   "The Overlook",
+        notes: "Collect return slips. If no slip: photo ID (Epic Pass preferred). Parent signature required. Attach return slip to class list and submit.",
+        warn:  true
+      },
+    ],
+
+    adult: [
+      {
+        start: MEET_TIME,
+        end:   MEET_TIME,
+        title: "Morning meeting",
+        loc:   "Village",
+        notes: "Weekend/red = 8:00. Normal day = 8:30."
+      },
+      {
+        start:  "09:00",
+        end:    "09:45",
+        title:  "Morning assignments",
+        loc:    "",
+        notes:  "Typical: Check-in / VRR / AGL / Archway. If you’re teaching a 9–10 private, you generally skip assignments.",
+        bucket: "assignments"
+      },
+      {
+        start: "10:15",
+        end:   "12:45",
+        title: "Lessons",
+        loc:   "",
+        notes: ""
+      },
+      {
+        start: "12:45",
+        end:   "13:15",
+        title: "Lunch (clock out!)",
+        loc:   "",
+        notes: "https://proconnecttools.vailresorts.com/"
+      },
+      {
+        start: "13:30",
+        end:   "16:00",
+        title: "Lessons (clock in!)",
+        loc:   "",
+        notes: "https://proconnecttools.vailresorts.com/"
+      }
+    ]
+  };
+
+  const DUTY_LABELS = {
+    booting:   "Booting",
+    room:      "Room attendant",
+    vesting:   "Vesting",
+    skirunner: "Ski runner",
+    checkin:   "Check-in",
+    flags:     "Flags",
+    transport: "Transport",
+    leveling:  "Leveling",
+    vrr:       "VRR",
+    agl:       "AGL",
+    archway:   "Archway",
+    private:   "1-hr AM Private"
+  };
+
+  function buildBlocks() {
+    const blocks = structuredClone(TEMPLATES[cat] || TEMPLATES.chickadees);
+
+    const assign = blocks.find(b => b.bucket === "assignments");
+    const hasPrivate = (cat === "adult" && duties.includes("private"));
+
+    if (hasPrivate) {
+      const idx = blocks.indexOf(assign);
+      if (idx >= 0) {
+        blocks.splice(idx, 1, {
+          start: "09:00",
+          end:   "10:00",
+          title: "AM Private (no assignments)",
+          loc:   "",
+          notes: "If you’re teaching this 9–10 private, you usually do not take morning assignments.",
+          warn:  true
+        });
+      }
+    } else if (assign && duties.length) {
+      assign.tags = duties
+        .map(d => DUTY_LABELS[d])
+        .filter(Boolean);
+    }
+
+    return blocks;
+  }
+
+  function parseHHMMToMinutes(hhmm) {
+    if (!/^\d{2}:\d{2}$/.test(hhmm)) return null;
+    const [h, m] = hhmm.split(":").map(Number);
+    if (Number.isNaN(h) || Number.isNaN(m)) return null;
+    return h * 60 + m;
+  }
+  
+  function getDayRangeMinutes(blocks) {
+    let minStart = null;
+    let maxEnd = null;
+  
+    for (const b of blocks) {
+      const s = parseHHMMToMinutes(b.start);
+      const e = parseHHMMToMinutes(b.end);
+  
+      if (s !== null) minStart = (minStart === null) ? s : Math.min(minStart, s);
+      if (e !== null) maxEnd   = (maxEnd === null)   ? e : Math.max(maxEnd, e);
+    }
+  
+    // If we couldn't find a meaningful range, return null
+    if (minStart === null || maxEnd === null || maxEnd <= minStart) return null;
+    return { minStart, maxEnd };
+  }
+  
+
+function startNowNeedle(blocks) {
+  // Place immediately
+  placeNowNeedle(blocks);
+
+  // Update every 5 minutes
+  if (window.__nowNeedleInterval) clearInterval(window.__nowNeedleInterval);
+  window.__nowNeedleInterval = setInterval(() => placeNowNeedle(blocks), 5 * 60 * 1000);
+
+  // Re-place on resize (rare but real)
+  window.removeEventListener("resize", window.__nowNeedleOnResize);
+  window.__nowNeedleOnResize = () => placeNowNeedle(blocks);
+  window.addEventListener("resize", window.__nowNeedleOnResize);
+
+  // Re-place when any <details> is toggled (your bug trigger)
+  const timeline = document.getElementById("timeline");
+  if (timeline) {
+    if (!window.__nowNeedleToggleBound) {
+      timeline.addEventListener("toggle", () => {
+        // Let layout settle for a tick, then move needle if needed
+        requestAnimationFrame(() => placeNowNeedle(blocks));
+      }, true);
+      window.__nowNeedleToggleBound = true;
+    }
+  }
+}
+
+function placeNowNeedle(blocks) {
+  const needle = document.getElementById("nowNeedle");
+  const timeline = document.getElementById("timeline");
+  if (!needle || !timeline) return;
+
+  const blockEls = Array.from(timeline.querySelectorAll(".block"));
+  if (!blockEls.length) {
+    needle.style.display = "none";
+    return;
+  }
+
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes() + (now.getSeconds() / 60);
+
+  let bestIdx = -1;
+  let bestStart = -Infinity;
+
+  for (let i = 0; i < blocks.length; i++) {
+    const s = parseHHMMToMinutes(blocks[i].start);
+    if (s === null) continue;
+    if (s < nowMinutes && s > bestStart) {
+      bestStart = s;
+      bestIdx = i;
+    }
+  }
+
+  if (bestIdx === -1 || !blockEls[bestIdx]) {
+    if (needle.parentElement) needle.parentElement.removeChild(needle);
+    needle.style.display = "none";
+    return;
+  }
+
+  const hostBlock = blockEls[bestIdx];
+
+  // IMPORTANT: if host is <details>, put the needle in the <summary> so it’s always visible
+  const host =
+    hostBlock.tagName === "DETAILS"
+      ? hostBlock.querySelector("summary") || hostBlock
+      : hostBlock;
+
+  // Move needle into the chosen host
+  if (needle.parentElement !== host) {
+    if (needle.parentElement) needle.parentElement.removeChild(needle);
+    host.appendChild(needle);
+  }
+
+  needle.style.display = "block";
+}
+
+
+  function render() {
+    document.getElementById("heading").textContent = CAT_LABEL[cat] || "Day Plan";
+    document.getElementById("meta").textContent =
+      `Meeting: ${MEET_TIME} • Duties: ${duties.length ? duties.map(d => DUTY_LABELS[d]).filter(Boolean).join(", ") : "none"}`;
+    const timeline = document.getElementById("timeline");
+    const blocks = buildBlocks();
+    timeline.innerHTML = blocks.map(b => renderBlock(b)).join("");
+    startNowNeedle(blocks);
+  }
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[c])
+  );
+}
+
+// Finds URL-looking substrings and turns them into safe <a> tags.
+// Supports http(s)://..., and www.... (auto-prefixes https://)
+function linkifyText(raw) {
+  const text = String(raw ?? "");
+  if (!text) return "";
+
+  // Conservative URL matcher:
+  // - http:// or https:// followed by non-space/non-angle-bracket characters
+  // - OR www. followed by same
+  // Trims common trailing punctuation.
+  const urlRe = /\b((https?:\/\/|www\.)[^\s<>()]+)\b/gi;
+
+  let out = "";
+  let last = 0;
+
+  for (const m of text.matchAll(urlRe)) {
+    const idx = m.index ?? 0;
+    const url0 = m[1];
+
+    // Add preceding plain text
+    out += escapeHtml(text.slice(last, idx));
+
+    // Trim trailing punctuation that often sticks to URLs in prose
+    let url = url0;
+    let trailing = "";
+    while (/[)\],.!?:;'"”]+$/.test(url)) {
+      trailing = url.slice(-1) + trailing;
+      url = url.slice(0, -1);
+    }
+
+    const href = url.startsWith("www.") ? `https://${url}` : url;
+
+    // Emit link (escaped)
+    out += `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>`;
+    out += escapeHtml(trailing);
+
+    last = idx + url0.length;
+  }
+
+  // Remaining tail
+  out += escapeHtml(text.slice(last));
+  return out;
+}
+
+
+function renderBlock(b) {
+  const time =
+    (b.start === b.end) ? b.start :
+    (b.start && b.end)  ? `${b.start}–${b.end}` :
+    "";
+
+  const locSuffix = b.loc ? ` • ${b.loc}` : "";
+  const notesText = (b.notes || "").trim();
+  const hasNotes = notesText.length > 0;
+
+  const tagsHtml = b.tags
+    ? `<div class="tags">${b.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>`
+    : "";
+
+  if (hasNotes) {
+    // notes rendered inside <details> content; URLs become clickable
+    return `
+      <details class="block ${b.warn ? "warn" : ""}">
+        <summary>
+          <div class="top">
+            <div class="title">${escapeHtml(b.title)}</div>
+            ${tagsHtml}
+            <div class="time">${escapeHtml(time)}</div>
+          </div>
+        </summary>
+        <div class="content">
+          <div class="sub">${linkifyText(notesText + locSuffix)}</div>
+        </div>
+      </details>
+    `;
+  }
+
+  // No notes: show loc (if present). Also linkify loc in case you drop links there.
+  return `
+    <div class="block ${b.warn ? "warn" : ""}">
+      <div class="top">
+        <div class="title">${escapeHtml(b.title)}</div>
+        <div class="time">${escapeHtml(time)}</div>
+      </div>
+      ${b.loc ? `<div class="sub">${b.loc}</div>` : ""}
+      ${tagsHtml}
+    </div>
+  `;
+}
+
+render();
+
+</script>
+</body>
+</html>
+

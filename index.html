@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta property="og:image"
+   content="https://ezide.com/ski/qrcode.png"
+   />
+  <meta property="og:description"
+   content="Ski lessons focused on presence, environment, and the quiet magic of the mountain."
+   />
+  <meta name="description"
+   content="Ski lessons focused on presence, environment, and the quiet magic of the mountain."
+   />
+  <meta name="apple-mobile-web-app-title"
+   content="Shandy Brown | Ski Instructor"
+   />
+
+  <title>Shandy Brown | Ski Instructor</title>
+  <link rel="icon" href="shandy_brown.png">
+  <link rel="apple-touch-icon" href="shandy_brown.png">
+  <style>
+    :root{
+      --bg: #eef5ff;
+      --ink: #0a1a2a;
+      --muted: #516a86;
+      --line: rgba(11,27,43,.12);
+      --brand: #1b6fe3;
+      --brand2:#0f4fb8;
+      --shadow: 0 18px 40px rgba(11,27,43,.14);
+      --radius: 18px;
+      --max: 1060px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ min-height:100%; }
+    html{
+      background:
+        radial-gradient(1200px 700px at 70% -10%, rgba(27,111,227,.22), transparent 60%),
+        radial-gradient(900px 600px at 10% 10%, rgba(255,255,255,.9), transparent 55%),
+        linear-gradient(180deg, var(--bg), #ffffff 55%);
+    }
+    body{
+      margin:0;
+      font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--ink);
+      background: transparent;
+    }
+
+    a{ color:inherit; }
+    a:hover{ text-decoration:underline; }
+
+    .container{ width:min(var(--max), calc(100% - 32px)); margin-inline:auto; }
+
+    /* Header / hero */
+    header{
+      padding: 28px 0 14px;
+    }
+
+    .hero{
+      border-radius: calc(var(--radius) + 10px);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      background:
+        linear-gradient(180deg, rgba(11,27,43,.65), rgba(11,27,43,.15) 55%, rgba(255,255,255,.94) 86%, #ffffff 100%),
+        url("hero.jpg");
+      background-size: cover;
+      background-position: center;
+      position:relative;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(900px 450px at 70% 30%, rgba(25,151,255,.35), transparent 55%),
+        radial-gradient(700px 400px at 20% 40%, rgba(123,220,255,.25), transparent 60%);
+      pointer-events:none;
+      mix-blend-mode: screen;
+      opacity: .95;
+    }
+
+    .hero-inner{
+      position:relative;
+      padding: 84px 126px 0;
+      z-index:1;
+    }
+
+    .brandlock{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:16px;
+      color:#fff;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .brandlock h1{
+      margin:0;
+      font-size: clamp(34px, 5vw, 54px);
+      line-height:1;
+      font-weight: 900;
+      letter-spacing:.03em;
+      text-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    .brandlock .subtitle{
+      margin: 8px 0 0;
+      font-weight: 700;
+      opacity:.92;
+      font-size: 14px;
+    }
+
+    .rule{
+      height:1px; background: rgba(255,255,255,.35);
+      margin: 14px 0 100px;
+    }
+
+    .hero-body{
+      padding: 28px 0 26px;
+      text-align:center;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero-body h2{
+      margin: 20px 0 6px;
+      font-size: clamp(18px, 2.2vw, 26px);
+      letter-spacing: -.01em;
+    }
+
+    .hero-body p{
+      margin:0 auto 16px;
+      max-width: 62ch;
+      color: #0a0a0a;
+      font-weight: 600;
+    }
+
+
+    .contact-strip{
+      display:flex;
+      justify-content:center;
+      gap:14px 18px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(6px);
+    }
+
+    /* Main grid sections */
+    main{ padding: 18px 0 42px; }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .card{
+      background: rgba(255,255,255,.94);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 30px rgba(11,27,43,.08);
+      overflow:hidden;
+    }
+
+    .card .hd{
+      padding: 14px 16px 0;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .badge{
+      width:38px; height:38px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(27,111,227,.18), rgba(27,111,227,.08));
+      border: 1px solid rgba(27,111,227,.22);
+      display:grid; place-items:center;
+      font-weight:900;
+      color: var(--brand2);
+    }
+    .card h3{
+      margin:0;
+      font-size: 16px;
+      letter-spacing: -.01em;
+    }
+    .card .bd{ padding: 10px 16px 16px; color: var(--muted); font-weight: 600; }
+
+    .section-title{
+      text-align:center;
+      margin: 22px 0 12px;
+    }
+    .section-title h2{
+      margin:0;
+      font-size: 22px;
+      letter-spacing: -.02em;
+    }
+    .section-title p{
+      margin: 6px auto 0;
+      color: var(--muted);
+      max-width: 70ch;
+      font-weight: 600;
+    }
+
+    .pay-row{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .pay{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height: 62px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.94);
+      border: 1px solid var(--line);
+      box-shadow: 0 12px 30px rgba(11,27,43,.07);
+      font-weight: 900;
+      letter-spacing:.02em;
+      gap:10px;
+    }
+    .pay .logo{
+      width:34px; height:34px;
+      display:grid; place-items:center;
+      font-weight: 900;
+    }
+
+    footer{
+      padding: 18px 0 30px;
+      color: var(--muted);
+      text-align:center;
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 860px){
+      .grid-3{ grid-template-columns: 1fr; }
+      .pay-row{ grid-template-columns: 1fr; }
+      .brandlock{ flex-direction:column; align-items:flex-start; }
+
+      .hero-inner {
+        padding: 14px 26px 0;
+      }
+
+      .rule{
+        margin: 14px 0 10px;
+      }
+
+      .hero-body {
+        text-shadow: 0 2px 8px rgba(220,220,250,0.9);
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+  <header class="container">
+    <section class="hero" aria-label="Hero">
+    <!--
+    Photo by Piotr Figlarz on Unsplash
+    https://unsplash.com/photos/a-group-of-people-riding-skis-on-top-of-a-snow-covered-slope-NfTv1c8_B3U
+    -->
+      <div class="hero-inner">
+        <div class="brandlock">
+          <div>
+            <h1 style="text-transform: uppercase">Shandy Brown</h1>
+            <div class="subtitle">SKI INSTRUCTOR</div>
+          </div>
+        </div>
+        <div class="rule" role="presentation"></div>
+
+        <div class="hero-body">
+          <div class="contact-strip" id="contact">
+            <span class="pill"><span class="badge" aria-hidden="true">☎</span>
+            <span>(650)</span> <span>283-9665</span>
+            </span>
+            <span class="pill"><span class="badge" aria-hidden="true">✉</span>
+            <span>s@ezide.com</span>
+            </span>
+            <span class="pill">
+            <span class="badge" aria-hidden="true">+</span>
+            <a href="shandy_brown.vcf">Add to contacts</a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="hero-body">
+    <section>
+          <h2>Private Lessons at Northstar Resort</h2>
+          <p>
+            Calm, confidence-building coaching for first-timers through advanced skiers.
+            We’ll chase that “mountain magic” — safely, efficiently, and with a plan.
+          </p>
+    </section>
+    </div>
+
+  </header>
+
+  <main class="container">
+    <section id="services" aria-label="Services">
+      <div class="grid-3">
+        <article class="card">
+          <div class="hd">
+            <div class="badge" aria-hidden="true">⛷</div>
+            <h3>Private Ski Lessons</h3>
+          </div>
+          <div class="bd">
+            One-on-one or small groups. Clear goals, simple cues, and
+            terrain choices that create fast wins.
+            <p>
+              Text me or request "Shandy Brown" at 
+              <b><a href="https://www.northstarcalifornia.com/plan-your-trip/ski-and-ride-lessons/category/private.aspx">Northstar</a></b>
+              (<a href="tel:8004666784">800-466-6784</a>)
+              </p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="hd">
+            <div class="badge" aria-hidden="true">🏔</div>
+            <h3>Holistic Skiing</h3>
+          </div>
+          <div class="bd">
+            Holistic ski practice that blends movement, breath, and
+            environmental awareness. By anchoring attention in terrain,
+            environment, and sensation, lessons use skiing’s naturally
+            altered state to challenge default habits, both on and off snow.
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="hd">
+            <div class="badge" aria-hidden="true">👨‍👩‍👧</div>
+            <h3>All Levels &amp; Ages</h3>
+          </div>
+          <div class="bd">
+            Kids, teens, and adults — first day through advanced. Lessons
+            are tuned to attention span, personal (and parental) goals,
+            and comfort.
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <section aria-label="Lessons for everyone">
+      <div class="section-title">
+        <h2>Let's meet the mountain together</h2>
+        <p>
+        Heart and mind at full attention, moving through a living landscape.
+        </p>
+      </div>
+    </section>
+
+    <section aria-label="Tips and resort links">
+      <div class="pay-row">
+
+        <a class="pay" href="https://venmo.com/s-brown-3"
+           target="_blank" rel="noopener">
+          <img src="venmo_logo.png" alt="V" class="logo">
+          Tip on Venmo
+        </a>
+        <a class="pay" href="https://paypal.me/shandy"
+           target="_blank" rel="noopener">
+          <img src="paypal_logo.png" alt="P" class="logo">
+          Tip on PayPal
+        </a>
+        <a class="pay" href="https://www.northstarcalifornia.com/"
+           target="_blank" rel="noopener">
+          <img src="northstar_logo.jpg" alt="P" class="logo">
+          Northstar Resort
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container">
+    <div>Private instruction booked through approved resort channels.</div>
+    <img style="margin-top: 20px" src="shandy_brown.png" width="32" height="32" />
+  </footer>
+</body>
+</html>
